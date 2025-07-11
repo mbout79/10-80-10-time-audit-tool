@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10-80-10 Time Audit Tool</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            color: #1e40af;
+            margin: 0 0 10px 0;
+        }
+        
+        .week-selector {
+            margin: 20px 0;
+            text-align: center;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .week-selector label {
+            font-weight: 600;
+            margin-right: 10px;
+        }
+        
+        .week-selector input {
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .tracking-table {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: #1e40af;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .category-10 { background: #fef3c7; }
+        .category-80 { background: #dcfce7; }
+        .category-dev { background: #e0e7ff; }
+        
+        .time-input {
+            width: 80px;
+            padding: 6px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .activity-input {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+        }
+        
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .summary-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .summary-card h3 {
+            margin: 0 0 10px 0;
+            color: #374151;
+        }
+        
+        .percentage {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .ideal { color: #059669; }
+        .warning { color: #d97706; }
+        .danger { color: #dc2626; }
+        
+        .insights {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .add-row-btn {
+            background: #1e40af;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        
+        .add-row-btn:hover {
+            background: #1d4ed8;
+        }
+        
+        .export-btn {
+            background: #059669;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 10px 0 0;
+            font-size: 16px;
+        }
+        
+        .export-btn:hover {
+            background: #047857;
+        }
+        
+        .import-btn {
+            background: #7c3aed;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+        }
+        
+        .import-btn:hover {
+            background: #6d28d9;
+        }
+        
+        .clear-import-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        
+        .clear-import-btn:hover {
+            background: #dc2626;
+        }
+        
+        .import-preview {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 2px solid #7c3aed;
+        }
+        
+        .import-preview h3 {
+            color: #7c3aed;
+            margin: 0 0 15px 0;
+        }
+        
+        .preview-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            margin: 5px 0;
+            background: #f8fafc;
+            border-radius: 5px;
+            border-left: 4px solid #7c3aed;
+        }
+        
+        .preview-item .event-title {
+            flex: 1;
+            font-weight: 500;
+        }
+        
+        .preview-item .event-duration {
+            background: #e0e7ff;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        
+        .preview-item select {
+            padding: 4px;
+            border: 1px solid #d1d5db;
+            border-radius: 3px;
+        }
+        
+        .import-actions {
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        .import-actions button {
+            margin: 0 10px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .confirm-import {
+            background: #10b981;
+            color: white;
+        }
+        
+        .cancel-import {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .breakdown-btn {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 12px;
+            width: 100%;
+        }
+        
+        .breakdown-btn:hover {
+            background: #5046e4;
+        }
+        
+        .breakdown-section {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .breakdown-header h4 {
+            margin: 0 0 5px 0;
+            color: #374151;
+            font-size: 14px;
+        }
+        
+        .breakdown-header p {
+            margin: 0 0 15px 0;
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .core-category {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #d1d5db;
+        }
+        
+        .core-category input[type="text"] {
+            flex: 1;
+            padding: 4px 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        
+        .core-category input[type="number"] {
+            width: 50px;
+            padding: 4px;
+            border: 1px solid #d1d5db;
+            border-radius: 3px;
+            font-size: 12px;
+            text-align: center;
+        }
+        
+        .remove-category-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 10px;
+        }
+        
+        .add-category-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin: 10px 0;
+        }
+        
+        .add-category-btn:hover {
+            background: #059669;
+        }
+        
+        .core-chart-container {
+            margin-top: 15px;
+            text-align: center;
+        }
+        
+        .core-chart-container canvas {
+            max-width: 200px;
+            max-height: 200px;
+        }
+        
+        .core-legend {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid #1e40af;
+        }
+        
+        .core-legend h3 {
+            margin: 0 0 15px 0;
+            color: #1e40af;
+        }
+        
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+        
+        .legend-item {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #1e40af;
+        }
+        
+        .legend-item h4 {
+            margin: 0 0 8px 0;
+            color: #374151;
+            font-size: 14px;
+        }
+        
+        .legend-item p {
+            margin: 0;
+            font-size: 12px;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+        
+        .main-chart-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+            height: 120px;
+        }
+        
+        .main-chart-container canvas {
+            max-width: 120px;
+            max-height: 120px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>10-80-10 Time Audit Tool</h1>
+        <p>Track your time to ensure you're spending it on what matters most</p>
+        <div style="font-size: 10px; color: #6b7280; margin-top: 10px;">
+            © 2025 Maarten Bout. All rights reserved.
+        </div>
+    </div>
+    
+    <div class="week-selector">
+        <label for="week-date">Week Starting:</label>
+        <input type="date" id="week-date" onchange="updateWeekDisplay()">
+        <span id="week-display" style="margin-left: 15px; font-weight: 600;"></span>
+        
+        <div class="calendar-import" style="margin-left: 30px; display: inline-block;">
+            <label for="calendar-file" class="import-btn">📅 Import Calendar</label>
+            <input type="file" id="calendar-file" accept=".ics" onchange="handleCalendarUpload(event)" style="display: none;">
+            <button class="clear-import-btn" onclick="clearImportedData()" id="clear-import" style="display: none;">Clear Imported</button>
+        </div>
+    </div>
+    
+    <div id="import-preview" style="display: none;">
+        <!-- Calendar import preview will be shown here -->
+    </div>
+    
+    <div class="tracking-table">
+        <table id="timeTable">
+            <thead>
+                <tr>
+                    <th>Day</th>
+                    <th>Activity Description</th>
+                    <th>Category</th>
+                    <th>Core Sub-Category</th>
+                    <th>Hours</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody id="timeTableBody">
+                <!-- Rows will be populated by JavaScript -->
+            </tbody>
+        </table>
+        <button class="add-row-btn" onclick="addRow()">+ Add Activity</button>
+    </div>
+    
+    <div class="summary-cards">
+        <div class="summary-card">
+            <h3>🏢 Being Employed (Target: 10%)</h3>
+            <div class="percentage" id="employed-percent">0%</div>
+            <div id="employed-hours">0 hours</div>
+        </div>
+        
+        <div class="summary-card">
+            <h3>🎯 Core Responsibilities (Target: 80%)</h3>
+            <div class="percentage" id="core-percent">0%</div>
+            <div id="core-hours">0 hours</div>
+            <button class="breakdown-btn" id="core-breakdown-btn" onclick="toggleCoreBreakdown()">
+                📊 Break Down Core Activities
+            </button>
+            <div id="core-breakdown" class="breakdown-section" style="display: none;">
+                <div class="breakdown-header">
+                    <h4>Your Core Responsibilities Breakdown</h4>
+                    <p>Customize how you want to spend your 80% core time</p>
+                </div>
+                <div id="core-categories">
+                    <!-- Dynamic core categories will be added here -->
+                </div>
+                <button class="add-category-btn" onclick="addCoreCategory()">+ Add Core Activity</button>
+                <div class="core-chart-container">
+                    <canvas id="coreChart" width="200" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="summary-card">
+            <h3>🌱 Professional Development (Target: 10%)</h3>
+            <div class="percentage" id="dev-percent">0%</div>
+            <div id="dev-hours">0 hours</div>
+        </div>
+        
+        <div class="summary-card">
+            <h3>⏰ Total Hours Tracked</h3>
+            <div class="percentage" id="total-hours">0</div>
+            <div>hours this week</div>
+        </div>
+        
+        <div class="summary-card">
+            <h3>📊 Overall Time Allocation</h3>
+            <div class="main-chart-container">
+                <canvas id="mainChart" width="200" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="insights">
+        <h3>📊 Your Time Audit Insights</h3>
+        <div id="insights-content">
+            <p>Start logging your activities to see personalized insights about your time allocation.</p>
+        </div>
+    </div>
+    
+    <div class="core-legend">
+        <h3>📋 Core Responsibilities Guide for Major Gift Officers</h3>
+        <div class="legend-grid">
+            <div class="legend-item">
+                <h4>🤝 Direct Donor Engagement</h4>
+                <p>Face-to-face meetings, phone calls, cultivation events, donor visits, relationship building conversations, informal coffee meetings</p>
+            </div>
+            <div class="legend-item">
+                <h4>🔍 Prospect Research and Management</h4>
+                <p>Prospect research, wealth screening, capacity analysis, pipeline development, initial outreach to new prospects, qualification activities</p>
+            </div>
+            <div class="legend-item">
+                <h4>🏢 Internal Coordination</h4>
+                <p>Meeting with finance about gift acceptability, coordinating with program officers, working with legal on gift agreements, CRM data entry, contact reports, proposal writing</p>
+            </div>
+            <div class="legend-item">
+                <h4>🎉 Stewardship and Recognition</h4>
+                <p>Thank you calls and notes, donor recognition planning, stewardship events, impact reporting, anniversary acknowledgments</p>
+            </div>
+        </div>
+    </div>
+    
+    <div style="text-align: center; margin-top: 20px;">
+        <button class="export-btn" onclick="exportToCSV()">📥 Export to CSV</button>
+        <button class="export-btn" onclick="printSummary()">🖨️ Print Summary</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        let activities = [];
+        let coreCategories = [];
+        let coreChart = null;
+        let mainChart = null;
+        let importedEvents = [];
+        let hasImportedData = false;
+        
+        // Sample activities to get started
+        const sampleActivities = [
+            { day: 'Monday', activity: 'Team meeting', category: 'employed', coreSubCategory: '', hours: 1, notes: 'Weekly all-hands' },
+            { day: 'Monday', activity: 'Donor call - Smith Foundation', category: 'core', coreSubCategory: 'core-donor-engagement', hours: 0.5, notes: 'Follow-up on proposal' },
+            { day: 'Tuesday', activity: 'CRM password reset', category: 'employed', coreSubCategory: '', hours: 0.25, notes: 'System maintenance' },
+            { day: 'Tuesday', activity: 'Prospect research', category: 'core', coreSubCategory: 'core-prospect-research', hours: 2, notes: 'Preparing for major gift ask' },
+            { day: 'Wednesday', activity: 'Fundraising webinar', category: 'development', coreSubCategory: '', hours: 1, notes: 'Learning new strategies' }
+        ];
+        
+        function initializeTable() {
+            activities = [...sampleActivities];
+            
+            // Initialize with sample core categories
+            coreCategories = [
+                { id: 'core-donor-engagement', name: 'Direct Donor Engagement', targetPercent: 40 },
+                { id: 'core-prospect-research', name: 'Prospect Research and Management', targetPercent: 25 },
+                { id: 'core-internal-coordination', name: 'Internal Coordination', targetPercent: 20 },
+                { id: 'core-stewardship', name: 'Stewardship and Recognition', targetPercent: 15 }
+            ];
+            
+            renderTable();
+            renderCoreCategories();
+            updateSummary();
+            
+            // Set current week
+            const today = new Date();
+            const monday = new Date(today.setDate(today.getDate() - today.getDay() + 1));
+            document.getElementById('week-date').value = monday.toISOString().split('T')[0];
+            updateWeekDisplay();
+        }
+        
+        function renderTable() {
+            const tbody = document.getElementById('timeTableBody');
+            tbody.innerHTML = '';
+            
+            activities.forEach((activity, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <select onchange="updateActivity(${index}, 'day', this.value)">
+                            ${days.map(day => `<option value="${day}" ${activity.day === day ? 'selected' : ''}>${day}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td>
+                        <input type="text" class="activity-input" value="${activity.activity}" 
+                               onchange="updateActivity(${index}, 'activity', this.value)">
+                    </td>
+                    <td>
+                        <select onchange="updateActivity(${index}, 'category', this.value)">
+                            <option value="employed" ${activity.category === 'employed' ? 'selected' : ''}>Being Employed</option>
+                            <option value="core" ${activity.category === 'core' ? 'selected' : ''}>Core Responsibilities</option>
+                            <option value="development" ${activity.category === 'development' ? 'selected' : ''}>Professional Development</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select onchange="updateActivity(${index}, 'coreSubCategory', this.value)" 
+                                ${activity.category !== 'core' ? 'disabled style="background: #f3f4f6; color: #9ca3af;"' : ''}>
+                            <option value="">General Core Work</option>
+                            ${coreCategories.map(cat => `<option value="${cat.id}" ${activity.coreSubCategory === cat.id ? 'selected' : ''}>${cat.name}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" class="time-input" min="0" max="24" step="0.25" value="${activity.hours}" 
+                               onchange="updateActivity(${index}, 'hours', parseFloat(this.value))">
+                    </td>
+                    <td>
+                        <input type="text" class="activity-input" value="${activity.notes}" 
+                               onchange="updateActivity(${index}, 'notes', this.value)">
+                    </td>
+                `;
+                
+                // Add category styling - only based on main category
+                const categoryClass = activity.category === 'employed' ? 'category-10' : 
+                                    activity.category === 'development' ? 'category-dev' :
+                                    'category-80'; // All core activities get green
+                row.className = categoryClass;
+                
+                tbody.appendChild(row);
+            });
+        }
+        
+        function addRow() {
+            activities.push({
+                day: 'Monday',
+                activity: '',
+                category: 'core',
+                coreSubCategory: '',
+                hours: 0,
+                notes: ''
+            });
+            renderTable();
+            updateSummary();
+        }
+        
+        function updateActivity(index, field, value) {
+            activities[index][field] = value;
+            
+            // Clear core sub-category if changing away from core
+            if (field === 'category' && value !== 'core') {
+                activities[index].coreSubCategory = '';
+            }
+            
+            renderTable();
+            updateSummary();
+        }
+        
+        function updateSummary() {
+            const totalHours = activities.reduce((sum, activity) => sum + activity.hours, 0);
+            const employedHours = activities.filter(a => a.category === 'employed').reduce((sum, a) => sum + a.hours, 0);
+            
+            // Core hours include only activities with category 'core'
+            const coreHours = activities.filter(a => a.category === 'core').reduce((sum, a) => sum + a.hours, 0);
+            
+            const devHours = activities.filter(a => a.category === 'development').reduce((sum, a) => sum + a.hours, 0);
+            
+            const employedPercent = totalHours > 0 ? (employedHours / totalHours * 100).toFixed(1) : 0;
+            const corePercent = totalHours > 0 ? (coreHours / totalHours * 100).toFixed(1) : 0;
+            const devPercent = totalHours > 0 ? (devHours / totalHours * 100).toFixed(1) : 0;
+            
+            document.getElementById('employed-percent').textContent = employedPercent + '%';
+            document.getElementById('core-percent').textContent = corePercent + '%';
+            document.getElementById('dev-percent').textContent = devPercent + '%';
+            document.getElementById('total-hours').textContent = totalHours;
+            
+            document.getElementById('employed-hours').textContent = employedHours + ' hours';
+            document.getElementById('core-hours').textContent = coreHours + ' hours';
+            document.getElementById('dev-hours').textContent = devHours + ' hours';
+            
+            // Color code percentages
+            document.getElementById('employed-percent').className = 'percentage ' + getColorClass(employedPercent, 10);
+            document.getElementById('core-percent').className = 'percentage ' + getColorClass(corePercent, 80);
+            document.getElementById('dev-percent').className = 'percentage ' + getColorClass(devPercent, 10);
+            
+            updateInsights(employedPercent, corePercent, devPercent, totalHours);
+            updateCoreChart();
+            updateMainChart();
+        }
+        
+        function getColorClass(actual, target) {
+            const diff = Math.abs(actual - target);
+            if (diff <= 5) return 'ideal';
+            if (diff <= 15) return 'warning';
+            return 'danger';
+        }
+        
+        function updateInsights(employed, core, dev, total) {
+            const insights = document.getElementById('insights-content');
+            let content = '<ul>';
+            
+            if (total < 30) {
+                content += '<li>⚠️ You\'ve only tracked ' + total + ' hours. Consider tracking more activities for a complete picture.</li>';
+            }
+            
+            if (core < 70) {
+                content += '<li>🎯 Your core responsibilities are at ' + core + '% (target: 80%). Consider what\'s taking time away from your primary work.</li>';
+            } else if (core > 90) {
+                content += '<li>⚡ You\'re spending ' + core + '% on core work. Great focus, but make sure you\'re not burning out!</li>';
+            }
+            
+            if (employed > 20) {
+                content += '<li>🏢 "Being employed" tasks are taking ' + employed + '% of your time (target: 10%). Look for ways to streamline administrative work.</li>';
+            }
+            
+            if (dev < 5) {
+                content += '<li>🌱 Only ' + dev + '% on professional development. Consider blocking time for learning and growth.</li>';
+            }
+            
+            if (core >= 70 && core <= 90 && employed <= 15 && dev >= 5) {
+                content += '<li>✅ Great balance! You\'re close to the ideal 10-80-10 split.</li>';
+            }
+            
+            content += '</ul>';
+            insights.innerHTML = content;
+        }
+        
+        function updateWeekDisplay() {
+            const weekDate = new Date(document.getElementById('week-date').value);
+            const endDate = new Date(weekDate);
+            endDate.setDate(endDate.getDate() + 6);
+            
+            const options = { month: 'short', day: 'numeric' };
+            const weekDisplay = weekDate.toLocaleDateString('en-US', options) + ' - ' + endDate.toLocaleDateString('en-US', options);
+            document.getElementById('week-display').textContent = weekDisplay;
+        }
+        
+        function exportToCSV() {
+            const headers = ['Day', 'Activity', 'Category', 'Core Sub-Category', 'Hours', 'Notes'];
+            const csvContent = [
+                headers.join(','),
+                ...activities.map(activity => [
+                    activity.day,
+                    '"' + activity.activity + '"',
+                    activity.category,
+                    activity.coreSubCategory,
+                    activity.hours,
+                    '"' + activity.notes + '"'
+                ].join(','))
+            ].join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'time-audit-' + document.getElementById('week-date').value + '.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+        
+        function printSummary() {
+            window.print();
+        }
+        
+        function updateMainChart() {
+            const ctx = document.getElementById('mainChart');
+            if (!ctx) return;
+            
+            const totalHours = activities.reduce((sum, activity) => sum + activity.hours, 0);
+            
+            if (totalHours === 0) {
+                if (mainChart) {
+                    mainChart.destroy();
+                    mainChart = null;
+                }
+                return;
+            }
+            
+            const employedHours = activities.filter(a => a.category === 'employed').reduce((sum, a) => sum + a.hours, 0);
+            const coreHours = activities.filter(a => a.category === 'core').reduce((sum, a) => sum + a.hours, 0);
+            const devHours = activities.filter(a => a.category === 'development').reduce((sum, a) => sum + a.hours, 0);
+            
+            const chartData = {
+                labels: [
+                    `Being Employed (${((employedHours / totalHours) * 100).toFixed(1)}%)`,
+                    `Core Responsibilities (${((coreHours / totalHours) * 100).toFixed(1)}%)`,
+                    `Professional Development (${((devHours / totalHours) * 100).toFixed(1)}%)`
+                ],
+                datasets: [{
+                    data: [employedHours, coreHours, devHours],
+                    backgroundColor: ['#fbbf24', '#10b981', '#6366f1'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            };
+            
+            if (mainChart) {
+                mainChart.destroy();
+            }
+            
+            mainChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 8,
+                                usePointStyle: true,
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const hours = context.parsed;
+                                    return `${label}: ${hours} hours`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '50%'
+                }
+            });
+        }
+        
+        // Core breakdown functions
+        function toggleCoreBreakdown() {
+            const breakdown = document.getElementById('core-breakdown');
+            const btn = document.getElementById('core-breakdown-btn');
+            
+            if (breakdown.style.display === 'none') {
+                breakdown.style.display = 'block';
+                btn.textContent = '📊 Hide Breakdown';
+                renderCoreCategories();
+                updateCoreChart();
+            } else {
+                breakdown.style.display = 'none';
+                btn.textContent = '📊 Break Down Core Activities';
+            }
+        }
+        
+        function renderCoreCategories() {
+            const container = document.getElementById('core-categories');
+            container.innerHTML = '';
+            
+            coreCategories.forEach((category, index) => {
+                const div = document.createElement('div');
+                div.className = 'core-category';
+                div.innerHTML = `
+                    <input type="text" value="${category.name}" 
+                           onchange="updateCoreCategory(${index}, 'name', this.value)"
+                           placeholder="Activity name">
+                    <input type="number" value="${category.targetPercent}" min="0" max="100"
+                           onchange="updateCoreCategory(${index}, 'targetPercent', parseInt(this.value))"
+                           placeholder="%">
+                    <span style="font-size: 10px; color: #6b7280;">%</span>
+                    <button class="remove-category-btn" onclick="removeCoreCategory(${index})">×</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        function addCoreCategory() {
+            const newId = 'core-custom-' + Date.now();
+            coreCategories.push({
+                id: newId,
+                name: 'New Activity',
+                targetPercent: 10
+            });
+            renderCoreCategories();
+            renderTable(); // Refresh table to include new category option
+        }
+        
+        function removeCoreCategory(index) {
+            const categoryToRemove = coreCategories[index];
+            
+            // Clear core sub-category for any activities using this category
+            activities = activities.map(activity => 
+                activity.coreSubCategory === categoryToRemove.id ? 
+                {...activity, coreSubCategory: ''} : activity
+            );
+            
+            coreCategories.splice(index, 1);
+            renderCoreCategories();
+            renderTable();
+            updateSummary();
+        }
+        
+        function updateCoreCategory(index, field, value) {
+            coreCategories[index][field] = value;
+            if (field === 'name') {
+                renderTable(); // Refresh table to show new name in dropdown
+            }
+            updateCoreChart();
+        }
+        
+        function updateCoreChart() {
+            const ctx = document.getElementById('coreChart');
+            if (!ctx) return;
+            
+            // Calculate actual hours for each core sub-category
+            const coreData = coreCategories.map(category => {
+                const hours = activities
+                    .filter(a => a.category === 'core' && a.coreSubCategory === category.id)
+                    .reduce((sum, a) => sum + a.hours, 0);
+                return {
+                    name: category.name,
+                    hours: hours,
+                    targetPercent: category.targetPercent
+                };
+            });
+            
+            // Add general 'core' activities (those without sub-categories)
+            const generalCoreHours = activities
+                .filter(a => a.category === 'core' && (!a.coreSubCategory || a.coreSubCategory === ''))
+                .reduce((sum, a) => sum + a.hours, 0);
+            
+            if (generalCoreHours > 0) {
+                coreData.push({
+                    name: 'Other Core Activities',
+                    hours: generalCoreHours,
+                    targetPercent: 0
+                });
+            }
+            
+            // Only show chart if there's data
+            if (coreData.every(d => d.hours === 0)) {
+                if (coreChart) {
+                    coreChart.destroy();
+                    coreChart = null;
+                }
+                return;
+            }
+            
+            const chartData = {
+                labels: coreData.map(d => d.name),
+                datasets: [{
+                    data: coreData.map(d => d.hours),
+                    backgroundColor: [
+                        '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#84cc16'
+                    ]
+                }]
+            };
+            
+            if (coreChart) {
+                coreChart.destroy();
+            }
+            
+            coreChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                fontSize: 10,
+                                padding: 10
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Core Activities Breakdown',
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Calendar import functions
+        function handleCalendarUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const icsContent = e.target.result;
+                parseICSFile(icsContent);
+            };
+            reader.readAsText(file);
+        }
+        
+        function parseICSFile(icsContent) {
+            const events = [];
+            const lines = icsContent.split('\n');
+            let currentEvent = null;
+            
+            // Get the selected week range
+            const weekStart = new Date(document.getElementById('week-date').value);
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekEnd.getDate() + 7);
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                
+                if (line === 'BEGIN:VEVENT') {
+                    currentEvent = {};
+                } else if (line === 'END:VEVENT' && currentEvent) {
+                    // Only include events within the selected week
+                    if (currentEvent.start && currentEvent.start >= weekStart && currentEvent.start < weekEnd) {
+                        events.push(currentEvent);
+                    }
+                    currentEvent = null;
+                } else if (currentEvent) {
+                    if (line.startsWith('SUMMARY:')) {
+                        currentEvent.title = line.substring(8).replace(/\\,/g, ',').replace(/\\;/g, ';');
+                    } else if (line.startsWith('DTSTART')) {
+                        const dateValue = line.split(':')[1] || line.split('=')[1]?.split(':')[1];
+                        if (dateValue) {
+                            currentEvent.start = parseICSDate(dateValue);
+                        }
+                    } else if (line.startsWith('DTEND')) {
+                        const dateValue = line.split(':')[1] || line.split('=')[1]?.split(':')[1];
+                        if (dateValue) {
+                            currentEvent.end = parseICSDate(dateValue);
+                        }
+                    } else if (line.startsWith('DESCRIPTION:')) {
+                        currentEvent.description = line.substring(12).replace(/\\,/g, ',').replace(/\\;/g, ';');
+                    }
+                }
+            }
+            
+            if (events.length > 0) {
+                showImportPreview(events);
+            } else {
+                alert('No events found for the selected week. Please make sure your calendar file contains events for ' + weekStart.toDateString() + ' to ' + weekEnd.toDateString());
+            }
+        }
+        
+        function parseICSDate(dateStr) {
+            // Handle different ICS date formats
+            if (dateStr.includes('T')) {
+                // DateTime format: 20231201T140000Z or 20231201T140000
+                const cleanDate = dateStr.replace(/[TZ]/g, '');
+                const year = cleanDate.substring(0, 4);
+                const month = cleanDate.substring(4, 6);
+                const day = cleanDate.substring(6, 8);
+                const hour = cleanDate.substring(8, 10) || '00';
+                const minute = cleanDate.substring(10, 12) || '00';
+                return new Date(year, month - 1, day, hour, minute);
+            } else {
+                // Date only format: 20231201
+                const year = dateStr.substring(0, 4);
+                const month = dateStr.substring(4, 6);
+                const day = dateStr.substring(6, 8);
+                return new Date(year, month - 1, day);
+            }
+        }
+        
+        function showImportPreview(events) {
+            importedEvents = events.map(event => {
+                const suggestion = suggestCategory(event.title, event.description);
+                return {
+                    ...event,
+                    duration: event.end ? (event.end - event.start) / (1000 * 60 * 60) : 1, // Duration in hours
+                    suggestedCategory: suggestion.category,
+                    suggestedSubCategory: suggestion.subCategory,
+                    day: getDayName(event.start)
+                };
+            });
+            
+            const previewDiv = document.getElementById('import-preview');
+            previewDiv.className = 'import-preview';
+            previewDiv.style.display = 'block';
+            
+            let html = `
+                <h3>📅 Calendar Import Preview (${importedEvents.length} events found)</h3>
+                <p>Review and adjust the categories for your imported events:</p>
+            `;
+            
+            importedEvents.forEach((event, index) => {
+                html += `
+                    <div class="preview-item">
+                        <div class="event-title">${event.title}</div>
+                        <div class="event-duration">${event.duration.toFixed(1)}h</div>
+                        <select onchange="updateImportedEventCategory(${index}, this.value)">
+                            <option value="employed" ${event.suggestedCategory === 'employed' ? 'selected' : ''}>Being Employed</option>
+                            <option value="core" ${event.suggestedCategory === 'core' ? 'selected' : ''}>Core Responsibilities</option>
+                            <option value="development" ${event.suggestedCategory === 'development' ? 'selected' : ''}>Professional Development</option>
+                        </select>
+                        <select onchange="updateImportedEventSubCategory(${index}, this.value)" 
+                                ${event.suggestedCategory !== 'core' ? 'disabled style="background: #f3f4f6; color: #9ca3af;"' : ''}>
+                            <option value="">General Core</option>
+                            ${coreCategories.map(cat => `<option value="${cat.id}" ${event.suggestedSubCategory === cat.id ? 'selected' : ''}>${cat.name}</option>`).join('')}
+                        </select>
+                    </div>
+                `;
+            });
+            
+            html += `
+                <div class="import-actions">
+                    <button class="confirm-import" onclick="confirmImport()">✅ Import ${importedEvents.length} Events</button>
+                    <button class="cancel-import" onclick="cancelImport()">❌ Cancel</button>
+                </div>
+            `;
+            
+            previewDiv.innerHTML = html;
+        }
+        
+        function suggestCategory(title, description) {
+            const text = (title + ' ' + (description || '')).toLowerCase();
+            
+            // Development keywords
+            const devKeywords = ['conference', 'webinar', 'workshop', 'training', 'learning', 'development', 'networking', 'afp', 'case'];
+            
+            // Being employed keywords
+            const employedKeywords = ['team meeting', 'all hands', 'staff meeting', 'admin', 'hr', 'training', 'onboarding', 'performance', 'budget', 'planning'];
+            
+            // Check main categories first
+            if (devKeywords.some(keyword => text.includes(keyword))) {
+                return { category: 'development', subCategory: '' };
+            }
+            
+            if (employedKeywords.some(keyword => text.includes(keyword))) {
+                return { category: 'employed', subCategory: '' };
+            }
+            
+            // Check for core sub-category matches
+            for (const coreCategory of coreCategories) {
+                if (text.includes(coreCategory.name.toLowerCase())) {
+                    return { category: 'core', subCategory: coreCategory.id };
+                }
+            }
+            
+            // Core activities keywords - if found, suggest core but no specific sub-category
+            const coreKeywords = ['donor', 'prospect', 'call', 'meeting', 'proposal', 'gift', 'fundraising', 'cultivation', 'stewardship', 'thank you', 'visit'];
+            if (coreKeywords.some(keyword => text.includes(keyword))) {
+                return { category: 'core', subCategory: '' };
+            }
+            
+            // Default to core
+            return { category: 'core', subCategory: '' };
+        }
+        
+        function getDayName(date) {
+            return days[date.getDay() === 0 ? 6 : date.getDay() - 1]; // Convert Sunday=0 to our Monday-first array
+        }
+        
+        function updateImportedEventCategory(index, category) {
+            importedEvents[index].suggestedCategory = category;
+            if (category !== 'core') {
+                importedEvents[index].suggestedSubCategory = '';
+            }
+            // Refresh the preview to update the sub-category dropdown state
+            showImportPreview(importedEvents.map(e => ({
+                title: e.title,
+                start: e.start,
+                end: e.end,
+                description: e.description
+            })));
+        }
+        
+        function updateImportedEventSubCategory(index, subCategory) {
+            importedEvents[index].suggestedSubCategory = subCategory;
+        }
+        
+        function confirmImport() {
+            // Convert imported events to activities
+            const newActivities = importedEvents.map(event => ({
+                day: event.day,
+                activity: event.title,
+                category: event.suggestedCategory,
+                coreSubCategory: event.suggestedSubCategory || '',
+                hours: Math.round(event.duration * 4) / 4, // Round to nearest 0.25
+                notes: `Imported from calendar${event.description ? ': ' + event.description.substring(0, 50) : ''}`
+            }));
+            
+            // Add to existing activities
+            activities.push(...newActivities);
+            hasImportedData = true;
+            
+            // Update UI
+            renderTable();
+            updateSummary();
+            cancelImport();
+            
+            // Show clear button
+            document.getElementById('clear-import').style.display = 'inline-block';
+            
+            alert(`Successfully imported ${newActivities.length} calendar events!`);
+        }
+        
+        function cancelImport() {
+            document.getElementById('import-preview').style.display = 'none';
+            document.getElementById('calendar-file').value = ''; // Reset file input
+            importedEvents = [];
+        }
+        
+        function clearImportedData() {
+            if (!confirm('This will remove all imported calendar events. Continue?')) return;
+            
+            // Remove imported activities (those with "Imported from calendar" in notes)
+            activities = activities.filter(activity => !activity.notes.startsWith('Imported from calendar'));
+            hasImportedData = false;
+            
+            // Update UI
+            renderTable();
+            updateSummary();
+            
+            // Hide clear button
+            document.getElementById('clear-import').style.display = 'none';
+            
+            alert('Imported calendar events have been cleared.');
+        }
+        
+        // Initialize the table when the page loads
+        document.addEventListener('DOMContentLoaded', initializeTable);
+    </script>
+</body>
+</html>
